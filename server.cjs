@@ -260,7 +260,7 @@ app.delete('/api/folders/remove', async (req, res) => {
 
 // Serve Vite production build when deployed
 app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
