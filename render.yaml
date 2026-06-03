@@ -1,0 +1,10 @@
+services:
+  - type: web_service
+    name: televault-pro
+    env: node
+    plan: free
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    root: .

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
+const path = require('path');
 const { TelegramClient, Api } = require("telegram");
 const { StringSession } = require("telegram/sessions");
 const { CustomFile } = require("telegram/client/uploads");
@@ -255,6 +256,12 @@ app.delete('/api/folders/remove', async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: "Pointer drop layer processing crash" }); }
+});
+
+// Serve Vite production build when deployed
+app.use(express.static(path.join(__dirname, 'dist')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;

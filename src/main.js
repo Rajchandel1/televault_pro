@@ -1,6 +1,6 @@
 ﻿import './style.css'
 
-const BACKEND_URL = "http://localhost:5000/api";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (import.meta.env.MODE === 'development' ? 'http://localhost:5000/api' : '/api');
 let userPhone = "";
 let cachedGalleryFiles = [];
 let cachedFolders = [];
