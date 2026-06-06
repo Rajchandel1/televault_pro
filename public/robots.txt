@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://televault-pro.onrender.com/sitemap.xml
+
+# Crawl optimization
+Crawl-delay: 1

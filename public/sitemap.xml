@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    <url>
+        <loc>https://televault-pro.onrender.com/</loc>
+        <lastmod>2024-12-15</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://televault-pro.onrender.com/icons/icon-512.png</image:loc>
+            <image:title>TeleVault Pro Logo</image:title>
+            <image:caption>Free unlimited cloud storage</image:caption>
+        </image:image>
+    </url>
+</urlset>

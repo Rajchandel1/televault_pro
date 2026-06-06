@@ -1,1 +1,93 @@
-televault
+# ─── DEPENDENCIES ────────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ─── ENVIRONMENT VARIABLES (CRITICAL) ────────
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# ─── LOGS ────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── RUNTIME DATA ────────────────────────────
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ─── TESTING / COVERAGE ──────────────────────
+coverage/
+*.lcov
+.nyc_output/
+.jest/
+
+# ─── BUILD OUTPUT ────────────────────────────
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+
+# ─── EDITOR / IDE ────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── OS FILES ────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ─── TEMPORARY FILES ─────────────────────────
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*~
+
+# ─── TEST/DEBUG FILES ────────────────────────
+test-bot.js
+test-*.js
+debug-*.js
+scratch.js
+temp/
+
+# ─── UPLOADS (just in case) ──────────────────
+uploads/
+tmp/
+
+# ─── DEPLOYMENT ──────────────────────────────
+.vercel/
+.netlify/
+.firebase/
+
+# ─── MISC ────────────────────────────────────
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.npm/
+.node_repl_history
+.yarn-integrity
