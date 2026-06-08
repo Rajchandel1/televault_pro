@@ -12,12 +12,15 @@ const authRoutes       = require('./src/routes/auth');
 const connectionRoutes = require('./src/routes/connection');
 const mediaRoutes      = require('./src/routes/media');
 const folderRoutes     = require('./src/routes/folders');
+const mtprotoRoutes = require('./src/routes/mtproto');
 
 const app = express();
 
 // Security & parsing
 security(app);
 app.use(express.json({ limit: '10mb' }));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve robots.txt and sitemap.xml with proper headers
 app.get('/robots.txt', (req, res) => {
@@ -44,6 +47,7 @@ app.use('/api', authRoutes);
 app.use('/api', connectionRoutes);
 app.use('/api', mediaRoutes);
 app.use('/api', folderRoutes);
+app.use('/api', mtprotoRoutes);
 
 // SPA fallback
 app.get('*', (req, res) => {

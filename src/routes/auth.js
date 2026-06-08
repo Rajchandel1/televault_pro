@@ -37,30 +37,40 @@ router.post('/login', asyncHandler(async (req, res) => {
     if (!identifier || !password)
         return res.status(400).json({ error: "Missing credentials." });
 
-    // Try userId first, then name
     let { data: user } = await supabase
         .from('televault_users')
-        .select('user_id, name, password, is_connected, channel_id')
+        .select('user_id, name, password, is_connected, channel_id, auth_method')
         .eq('user_id', identifier)
         .maybeSingle();
 
     if (!user) {
         const { data } = await supabase
             .from('televault_users')
-            .select('user_id, name, password, is_connected, channel_id')
+            .select('user_id, name, password, is_connected, channel_id, auth_method')
             .eq('name', identifier)
             .maybeSingle();
         user = data;
     }
 
     if (!user) return res.status(401).json({ error: "Invalid credentials." });
+    
+    // Block password login for OTP users
+    if (user.auth_method === 'otp') {
+        return res.status(403).json({ 
+            error: 'OTP_ACCOUNT',
+            message: 'This account uses OTP login.' 
+        });
+    }
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid credentials." });
 
     res.json({
-        success: true, userId: user.user_id, name: user.name,
-        isConnected: user.is_connected
+        success: true, 
+        userId: user.user_id, 
+        name: user.name,
+        isConnected: user.is_connected,
+        storageMode: 'bot'
     });
 }));
 

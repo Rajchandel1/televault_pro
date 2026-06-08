@@ -53,39 +53,47 @@ router.post('/set-channel', asyncHandler(async (req, res) => {
     if (!userId || !channelId) return res.status(400).json({ error: "Missing parameters." });
 
     const raw = String(channelId).trim();
-    
-    // Generate possible formats to try
     const candidates = [];
     
+    // @username
     if (raw.startsWith('@')) {
         candidates.push(raw);
-    } else if (raw.includes('t.me/')) {
+    } 
+    // t.me link
+    else if (raw.includes('t.me/')) {
         candidates.push('@' + raw.split('t.me/')[1].replace(/\//g, '').trim());
-    } else if (/^-100\d+$/.test(raw)) {
+    } 
+    // -100 prefix (channel)
+    else if (/^-100\d+$/.test(raw)) {
         candidates.push(raw);
-    } else if (/^-\d+$/.test(raw)) {
-        // Try as-is (group) and with -100 (channel)
-        candidates.push(raw);
-        candidates.push('-100' + raw.slice(1));
-    } else if (/^\d+$/.test(raw)) {
-        // Try -100 prefix and negative
-        candidates.push('-100' + raw);
-        candidates.push('-' + raw);
-    } else {
+        // Also try without -100 in case it's a group
+        candidates.push('-' + raw.slice(4));
+    } 
+    // Negative number (group or channel)
+    else if (/^-\d+$/.test(raw)) {
+        candidates.push(raw);                      // try as-is (group)
+        candidates.push('-100' + raw.slice(1));    // try with -100 (channel)
+    } 
+    // Positive number
+    else if (/^\d+$/.test(raw)) {
+        candidates.push('-100' + raw);  // channel format
+        candidates.push('-' + raw);      // group format
+    } 
+    else {
         candidates.push(raw);
     }
 
-    console.log(`[Channel Setup] Trying IDs:`, candidates);
+    console.log(`[Channel Setup] Input: ${raw} | Trying:`, candidates);
 
     let workingId = null;
     let lastError = '';
 
     for (const id of candidates) {
         try {
-            const testMsg = await bot.api.sendMessage(id, "🔐 TeleVault vault initialized!");
+            const testMsg = await bot.api.sendMessage(id, "🔐 CloudraZ vault initialized!");
             await bot.api.deleteMessage(id, testMsg.message_id).catch(() => {});
             workingId = id;
-            console.log(`[Channel Setup] ✅ Working ID: ${id}`);
+            console.log(`[Channel Setup] ✅ Working: ${id}`);
             break;
         } catch (err) {
             lastError = err.message;

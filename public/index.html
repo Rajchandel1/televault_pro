@@ -168,6 +168,25 @@
 </div>
 
 <input type="file" id="fileSelector" accept="image/*,video/*" class="hidden" multiple>
+<!-- Upload Progress Bar -->
+<div id="uploadProgressBar" class="hidden fixed bottom-0 left-0 right-0 z-[180] bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800 px-4 py-3">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M12 2a10 10 0 0 1 10 10" opacity="0.9"/>
+                    <path d="M12 2a10 10 0 0 0-10 10" opacity="0.2"/>
+                </svg>
+                <span id="uploadStatusText" class="text-xs font-semibold text-white">Uploading...</span>
+            </div>
+            <span id="uploadCounter" class="text-[11px] text-zinc-500 font-mono">0 / 0</span>
+        </div>
+        <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div id="uploadProgressFill" class="h-full bg-gradient-to-r from-white to-zinc-300 transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p id="uploadFileName" class="text-[10px] text-zinc-600 mt-1.5 truncate">Preparing...</p>
+    </div>
+</div>
 <div id="toastContainer" class="fixed top-5 right-5 z-[200] flex flex-col gap-2.5 w-80 pointer-events-none"></div>
 
 <!-- PWA Install -->
@@ -212,154 +231,225 @@
 
 
     <!-- AUTH BOX -->
-    <div id="authBox" class="bg-[#09090b] p-6 md:p-8 rounded-2xl border border-zinc-900 shadow-2xl max-w-sm mx-auto mt-16">
+<div id="authBox" class="bg-[#09090b] p-6 md:p-8 rounded-2xl border border-zinc-900 shadow-2xl max-w-sm mx-auto mt-16">
 
-        <!-- Register -->
-        <div id="stepRegister" class="space-y-4">
-            <div>
-                <h2 class="text-sm font-bold text-white mb-1">Create Account</h2>
-                <p class="text-zinc-600 text-xs">No phone number needed. Just name & password.</p>
-            </div>
-            <input type="text" id="nameInput" placeholder="Your name" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="50">
-            <input type="password" id="regPassword" placeholder="Create password (min. 6 chars)" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="128">
-            <button id="btnRegister" onclick="handleRegister()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Get Started →</button>
-            <div class="text-center">
-                <button onclick="showStep('login')" class="text-xs text-zinc-600 hover:text-zinc-400 transition-all">Already have an account? Login</button>
-            </div>
+    <!-- ✅ DEFAULT: OTP Login -->
+    <div id="stepOTPLogin" class="space-y-4">
+        <div>
+            <h2 class="text-sm font-bold text-white mb-1">Login with Telegram</h2>
+            <p class="text-zinc-600 text-xs">One OTP. 2GB per file support. Zero hassle.</p>
         </div>
-
-        <!-- Login -->
-        <div id="stepLogin" class="space-y-4 hidden">
-            <div>
-                <h2 class="text-sm font-bold text-white mb-1">Welcome Back</h2>
-                <p class="text-zinc-600 text-xs">Enter your name and password.</p>
-            </div>
-            <input type="text" id="loginIdentifier" placeholder="Your name" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700">
-            <input type="password" id="loginPassword" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="128">
-            <button id="btnLogin" onclick="handleLogin()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Login →</button>
-            <button onclick="showStep('register')" class="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-all text-center">← Create new account</button>
+        
+        <input type="tel" id="otpPhoneInput" placeholder="+91 98765 43210" 
+               class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 
+                      outline-none text-sm text-white focus:border-zinc-600 transition-all 
+                      placeholder:text-zinc-700">
+        
+        <button id="btnSendOTP" onclick="handleSendOTP()" 
+                class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm 
+                       py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">
+            Send OTP →
+        </button>
+        
+        <div class="flex items-center gap-3 pt-2">
+            <div class="flex-1 h-px bg-zinc-800"></div>
+            <span class="text-[10px] text-zinc-600 font-semibold uppercase tracking-widest">or</span>
+            <div class="flex-1 h-px bg-zinc-800"></div>
         </div>
+        
+        <button onclick="showStep('register')" 
+                class="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 font-medium text-xs 
+                       py-3 rounded-xl border border-zinc-800 transition-all">
+            Advanced Setup (For Nerds) 🤓
+        </button>
+        
+        <div class="bg-blue-950/20 border border-blue-900/30 rounded-xl p-3 text-xs text-blue-300/70 leading-relaxed">
+    💡 <strong>OTP Login:</strong> Faster, 2GB per file support<br>
+    🤓 <strong>Advanced:</strong> Bot setup, more control, 50MB per file limit
+</div>
 
-        <!-- Connect Options -->
-        <div id="stepConnect" class="space-y-5 hidden">
-            <div class="text-center space-y-1.5">
-                <h2 class="text-sm font-bold text-white">Choose Your Storage</h2>
-                <p class="text-zinc-500 text-xs leading-relaxed max-w-[260px] mx-auto">Pick how you want to store your files. Both are secure.</p>
-            </div>
+<p class="text-center text-[10px] text-zinc-600 pt-1">
+    we care about your privacy
+    <a href="/privacy.html" target="_blank" class="text-zinc-400 hover:text-white underline"> Privacy Policy</a>
+</p>
+    </div>
 
-            <a id="connectBotBtn" href="#" target="_blank" class="block w-full bg-[#229ED9] hover:bg-[#1a8ec0] text-white rounded-2xl p-4 transition-all active:scale-[0.98] no-underline">
-                <div class="flex items-start gap-3">
-                    <div class="text-2xl mt-0.5">⚡</div>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-bold">Quick Connect</h3>
-                        <p class="text-[11px] text-blue-100/70 mt-0.5 leading-relaxed">One tap setup. Files stored in a private bot chat. Only you can see them.</p>
-                    </div>
-                </div>
-            </a>
-
-            <div class="flex items-center gap-3">
-                <div class="flex-1 h-px bg-zinc-800"></div>
-                <span class="text-[10px] text-zinc-600 font-semibold uppercase tracking-widest">or</span>
-                <div class="flex-1 h-px bg-zinc-800"></div>
-            </div>
-
-            <button onclick="showStep('channelSetup')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-left rounded-2xl p-4 transition-all active:scale-[0.98] border border-zinc-800 hover:border-zinc-700">
-                <div class="flex items-start gap-3">
-                    <div class="text-2xl mt-0.5">🔐</div>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-bold text-white">Use Your Own Channel</h3>
-                        <p class="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">Maximum privacy. Create your channel, add our bot, keep full ownership.</p>
-                    </div>
-                </div>
+    <!-- OTP Verification -->
+    <div id="stepOTPVerify" class="space-y-4 hidden">
+        <div class="flex items-center gap-2">
+            <button onclick="showStep('otpLogin')" class="text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-
-            <button onclick="checkConnectionStatus()" id="btnCheckConnection" class="hidden w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 font-medium text-xs py-2.5 rounded-xl border border-zinc-800 transition-all">✓ I've started the bot — check connection</button>
+            <h2 class="text-sm font-bold text-white">Enter OTP</h2>
         </div>
+        
+        <p class="text-zinc-500 text-xs">Sent to <span id="otpSentPhone" class="text-white"></span></p>
+        
+        <input type="text" id="otpCodeInput" placeholder="12345" maxlength="6"
+               class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 
+                      outline-none text-2xl text-white text-center tracking-widest font-mono
+                      focus:border-zinc-600 transition-all placeholder:text-zinc-700">
+        
+        <button id="btnVerifyOTP" onclick="handleVerifyOTP()" 
+                class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm 
+                       py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">
+            Verify & Login →
+        </button>
+        
+        <button onclick="handleSendOTP()" 
+                class="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-all text-center">
+            Resend OTP
+        </button>
+    </div>
 
-        <!-- Channel Setup -->
-        <div id="stepChannelSetup" class="space-y-4 hidden">
-            <div class="flex items-center gap-2">
-                <button onclick="showStep('connect')" class="text-zinc-500 hover:text-white transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <h2 class="text-sm font-bold text-white">Setup Private Channel</h2>
-            </div>
-
-            <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
-
-                <!-- Step 1 -->
-                <div class="flex items-start gap-3">
-                    <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                    <div>
-                        <p class="text-xs text-zinc-200 font-medium">Create a Private Channel</p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5">Telegram → New Channel → Set as <span class="text-zinc-300">Private</span></p>
-                    </div>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="flex items-start gap-3">
-                    <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                    <div class="flex-1">
-                        <p class="text-xs text-zinc-200 font-medium">Add These 2 Bots as Admins</p>
-                        <div class="mt-1.5 space-y-1.5">
-                            <div class="flex items-center gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-2 cursor-pointer hover:bg-zinc-800 transition-all" onclick="copyText('@Clogal_bot')">
-                                <span>🤖</span>
-                                <div class="flex-1">
-                                    <span class="text-blue-400 font-mono text-xs font-semibold">@Clogal_bot</span>
-                                    <span class="text-zinc-600 text-[10px] block">Our storage bot</span>
-                                </div>
-                                <span class="text-zinc-600 text-[10px]">tap to copy</span>
-                            </div>
-                            <div class="flex items-center gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-2 cursor-pointer hover:bg-zinc-800 transition-all" onclick="copyText('@WhatChatIDBot')">
-                                <span>🆔</span>
-                                <div class="flex-1">
-                                    <span class="text-blue-400 font-mono text-xs font-semibold">@WhatChatIDBot</span>
-                                    <span class="text-zinc-600 text-[10px] block">To get your channel ID</span>
-                                </div>
-                                <span class="text-zinc-600 text-[10px]">tap to copy</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="flex items-start gap-3">
-                    <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                    <div>
-                        <p class="text-xs text-zinc-200 font-medium">Copy Channel ID & Paste Below</p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">
-                            <span class="text-zinc-300">@WhatChatIDBot</span> will automatically post your Channel ID in the channel. Copy that number and paste it here.
-                        </p>
-                        <div class="mt-1.5 bg-emerald-950/30 border border-emerald-900/30 rounded-lg px-2.5 py-2">
-                            <p class="text-[10px] text-emerald-400/80 leading-relaxed">
-                                💡 After giving ID, it will automatically leaves <span class="font-semibold">@WhatChatIDBot</span>. Keep <span class="font-semibold">@Clogal_bot</span> as admin — it's needed for storage.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Channel ID Input -->
-            <div>
-                <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-                    Paste Channel ID
-                </label>
-                <input type="text" id="channelInput" placeholder="e.g., -5251363860" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700 font-mono tracking-wide">
-                <p class="text-[10px] text-zinc-600 mt-1.5">
-                    Don't worry about format — we'll handle it
-                </p>
-            </div>
-
-            <button id="btnSetupVault" onclick="handleSetupVault()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">
-                Connect My Channel →
+    <!-- 2FA Step -->
+    <div id="stepOTP2FA" class="space-y-4 hidden">
+        <div class="flex items-center gap-2">
+            <button onclick="showStep('otpVerify')" class="text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
+            <h2 class="text-sm font-bold text-white">Two-Factor Auth</h2>
+        </div>
+        
+        <p class="text-zinc-500 text-xs">Your Telegram has 2FA enabled. Enter password.</p>
+        
+        <input type="password" id="otp2FAInput" placeholder="2FA password" 
+               class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 
+                      outline-none text-sm text-white focus:border-zinc-600 transition-all 
+                      placeholder:text-zinc-700">
+        
+        <button id="btnVerify2FA" onclick="handleVerify2FA()" 
+                class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm 
+                       py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">
+            Verify →
+        </button>
+    </div>
 
-            <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-500 leading-relaxed text-center">
-                🔒 This is YOUR channel. Only you own it. Remove bots anytime to revoke access.
-            </div>
+    <!-- ADVANCED MODE: Register -->
+    <div id="stepRegister" class="space-y-4 hidden">
+        <div class="flex items-center gap-2 mb-2">
+            <button onclick="showStep('otpLogin')" class="text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="text-xs text-zinc-500">Back to easy login</span>
+        </div>
+        <div>
+            <h2 class="text-sm font-bold text-white mb-1">Create Account</h2>
+            <p class="text-zinc-600 text-xs">Advanced mode with bot setup.</p>
+        </div>
+        <input type="text" id="nameInput" placeholder="Your name" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="50">
+        <input type="password" id="regPassword" placeholder="Create password (min. 6 chars)" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="128">
+        <button id="btnRegister" onclick="handleRegister()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Create Account →</button>
+        <div class="text-center">
+            <button onclick="showStep('login')" class="text-xs text-zinc-600 hover:text-zinc-400 transition-all">Already have an account? Login</button>
         </div>
     </div>
 
+    <!-- ADVANCED MODE: Login -->
+    <div id="stepLogin" class="space-y-4 hidden">
+        <div class="flex items-center gap-2 mb-2">
+            <button onclick="showStep('otpLogin')" class="text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="text-xs text-zinc-500">Back to easy login</span>
+        </div>
+        <div>
+            <h2 class="text-sm font-bold text-white mb-1">Welcome Back</h2>
+            <p class="text-zinc-600 text-xs">Enter your name and password.</p>
+        </div>
+        <input type="text" id="loginIdentifier" placeholder="Your name" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700">
+        <input type="password" id="loginPassword" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700" maxlength="128">
+        <button id="btnLogin" onclick="handleLogin()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Login →</button>
+        <button onclick="showStep('register')" class="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-all text-center">← Create new account</button>
+    </div>
+
+    <!-- Connect Step (Advanced Mode) -->
+    <div id="stepConnect" class="space-y-5 hidden">
+        <div class="text-center space-y-1.5">
+            <h2 class="text-sm font-bold text-white">Choose Your Storage</h2>
+            <p class="text-zinc-500 text-xs leading-relaxed max-w-[260px] mx-auto">Pick how you want to store your files. Both are secure.</p>
+        </div>
+
+        <a id="connectBotBtn" href="#" target="_blank" class="block w-full bg-[#229ED9] hover:bg-[#1a8ec0] text-white rounded-2xl p-4 transition-all active:scale-[0.98] no-underline">
+            <div class="flex items-start gap-3">
+                <div class="text-2xl mt-0.5">⚡</div>
+                <div class="flex-1">
+                    <h3 class="text-sm font-bold">Quick Connect</h3>
+                    <p class="text-[11px] text-blue-100/70 mt-0.5 leading-relaxed">One tap setup. Files stored in private bot chat.</p>
+                </div>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-3">
+            <div class="flex-1 h-px bg-zinc-800"></div>
+            <span class="text-[10px] text-zinc-600 font-semibold uppercase tracking-widest">or</span>
+            <div class="flex-1 h-px bg-zinc-800"></div>
+        </div>
+
+        <button onclick="showStep('channelSetup')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-left rounded-2xl p-4 transition-all active:scale-[0.98] border border-zinc-800 hover:border-zinc-700">
+            <div class="flex items-start gap-3">
+                <div class="text-2xl mt-0.5">🔐</div>
+                <div class="flex-1">
+                    <h3 class="text-sm font-bold text-white">Use Your Own Channel</h3>
+                    <p class="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">Max privacy. Create your channel, add bot.</p>
+                </div>
+            </div>
+        </button>
+
+        <button onclick="checkConnectionStatus()" id="btnCheckConnection" class="hidden w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 font-medium text-xs py-2.5 rounded-xl border border-zinc-800 transition-all">✓ I've started the bot — check</button>
+    </div>
+
+    <!-- Channel Setup (Keep as-is from existing code) -->
+    <div id="stepChannelSetup" class="space-y-4 hidden">
+        <div class="flex items-center gap-2">
+            <button onclick="showStep('connect')" class="text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <h2 class="text-sm font-bold text-white">Setup Private Channel</h2>
+        </div>
+
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
+            <div class="flex items-start gap-3">
+                <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <div>
+                    <p class="text-xs text-zinc-200 font-medium">Create a Private Channel</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Telegram → New Channel → Private</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <div class="flex-1">
+                    <p class="text-xs text-zinc-200 font-medium">Add 2 Bots as Admins</p>
+                    <div class="mt-1.5 space-y-1.5">
+                        <div class="flex items-center gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-2 cursor-pointer hover:bg-zinc-800 transition-all" onclick="copyText('@Clogal_bot')">
+                            <span>🤖</span>
+                            <span class="text-blue-400 font-mono text-xs font-semibold">@Clogal_bot</span>
+                            <span class="text-zinc-600 text-[10px] ml-auto">tap to copy</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-zinc-800/50 rounded-lg px-2.5 py-2 cursor-pointer hover:bg-zinc-800 transition-all" onclick="copyText('@WhatChatIDBot')">
+                            <span>🆔</span>
+                            <span class="text-blue-400 font-mono text-xs font-semibold">@WhatChatIDBot</span>
+                            <span class="text-zinc-600 text-[10px] ml-auto">tap to copy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-[10px] font-bold bg-white text-black w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <div>
+                    <p class="text-xs text-zinc-200 font-medium">Copy Channel ID & Paste</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">@WhatChatIDBot will post your Channel ID.</p>
+                </div>
+            </div>
+        </div>
+
+        <input type="text" id="channelInput" placeholder="-1001234567890" class="w-full px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-950 outline-none text-sm text-white focus:border-zinc-600 transition-all placeholder:text-zinc-700 font-mono">
+
+        <button id="btnSetupVault" onclick="handleSetupVault()" class="w-full bg-white hover:bg-zinc-100 text-black font-semibold text-sm py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">
+            Connect My Channel →
+        </button>
+    </div>
+</div>
     <!-- DASHBOARD -->
     <div id="appDashboard" class="hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-900 pb-4">
@@ -413,7 +503,7 @@
     <ul>
         <li><strong>100% Free Forever:</strong> No hidden charges, no subscriptions, no premium plans.</li>
         <li><strong>Unlimited Storage:</strong> Store as many photos and videos as you want.</li>
-        <li><strong>Maximum Privacy:</strong> Files stored in your own private Telegram channel.</li>
+        <li><strong>Maximum Privacy:</strong> Files stored in your own private Telegram channel/group.</li>
         <li><strong>Cross-Platform:</strong> Works on all devices via web browser or PWA install.</li>
         <li><strong>No Compression:</strong> Original quality preserved.</li>
         <li><strong>Fast & Reliable:</strong> Powered by Telegram's global infrastructure.</li>
@@ -422,7 +512,7 @@
     <h3>How TeleVault Works</h3>
     <ol>
         <li>Create your account with just a name and password</li>
-        <li>Connect via Quick Connect (bot chat) or Private Channel</li>
+        <li>Connect via Quick Connect (bot chat) or Private Channel/Group</li>
         <li>Upload photos and videos instantly</li>
         <li>Organize with folders and access from anywhere</li>
     </ol>
@@ -431,6 +521,34 @@
     <p>Unlike Google Photos (15GB limit), Dropbox (2GB free), or iCloud (5GB free), TeleVault offers truly unlimited storage at zero cost. Perfect for photographers, content creators, and anyone tired of cloud storage limits.</p>
 </section>
 </main>
+
+<!-- ✅ Selection Toolbar -->
+<div id="selectionToolbar" class="hidden fixed top-0 left-0 right-0 z-[170] bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button onclick="exitSelectionMode()" class="text-zinc-400 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <span class="text-sm font-semibold text-white">
+                <span id="selectionCount">0</span> selected
+            </span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="selectAll()" class="text-xs text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-zinc-900 transition-all">
+                Select All
+            </button>
+            <button onclick="bulkAddToFolder()" class="bg-white hover:bg-zinc-100 text-black text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                Folder
+            </button>
+            <button onclick="bulkDelete()" class="bg-red-950 hover:bg-red-900 text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-900/40 transition-all active:scale-95 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Nav Dock -->
 <nav id="navDock" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/60 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-5">
@@ -475,11 +593,16 @@
                 <p id="settingsCreated" class="text-sm text-zinc-400 font-medium">—</p>
             </div>
         </div>
-        <div class="p-5 border-t border-zinc-900">
-            <button onclick="promptLogout()" class="w-full bg-red-950/50 hover:bg-red-950 text-red-400 font-semibold text-xs py-2.5 rounded-xl border border-red-900/40 transition-all active:scale-[0.98]">
-                Logout
-            </button>
-        </div>
+      <div class="p-5 border-t border-zinc-900 space-y-2">
+    <a href="/privacy.html" target="_blank" 
+       class="block w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 font-medium text-xs py-2.5 rounded-xl border border-zinc-800 transition-all text-center">
+        Privacy Policy
+    </a>
+    <button onclick="promptLogout()" class="w-full bg-red-950/50 hover:bg-red-950 text-red-400 font-semibold text-xs py-2.5 rounded-xl border border-red-900/40 transition-all active:scale-[0.98]">
+        Logout
+    </button>
+</div>
+        
     </div>
 </div>
 
@@ -551,7 +674,7 @@
     </div>
 </div>
 <!-- ═══ FOOTER ═══ -->
-<footer id="appFooter" class="hidden mt-16 pt-6 border-t border-zinc-900 max-w-4xl mx-auto">
+<footer id="appFooter" class="hidden mt-16 pt-6 border-t border-zinc-900 max-w-4xl mx-auto pb-8">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-zinc-600 text-[11px]">
         <div class="flex items-center gap-1.5">
             <span>Built with</span>
@@ -563,13 +686,19 @@
             </a>
         </div>
 
-        <a href="https://github.com/Rajchandel1" target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-            <span>@Rajchandel1</span>
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="/privacy.html" 
+               class="text-zinc-500 hover:text-white transition-all">
+                Privacy
+            </a>
+            <a href="https://github.com/Rajchandel1" target="_blank" rel="noopener noreferrer"
+               class="flex items-center gap-1.5 text-zinc-500 hover:text-white transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                <span>@Rajchandel1</span>
+            </a>
+        </div>
     </div>
 </footer>
 <script src="/app.js"></script>

@@ -42,3 +42,52 @@ body {
     white-space: nowrap;
     border: 0;
 }
+
+/* Selection mode styles */
+.gallery-card.selected {
+    outline: 3px solid white;
+    outline-offset: -3px;
+    transform: scale(0.97);
+}
+
+.gallery-card.selectable .selection-overlay {
+    opacity: 1;
+}
+
+.selection-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid white;
+    z-index: 20;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-card.selected .selection-overlay {
+    background: white;
+    opacity: 1;
+}
+
+.gallery-card.selected .selection-overlay svg {
+    display: block;
+    color: black;
+}
+
+.selection-overlay svg {
+    display: none;
+    width: 14px;
+    height: 14px;
+}
+
+body.selection-mode {
+    user-select: none;
+    -webkit-user-select: none;
+}

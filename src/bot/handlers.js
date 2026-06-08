@@ -5,63 +5,116 @@ const pendingChannels = require('../stores/pendingChannels');
 
 const startBot = () => {
 
+    // ✅ /start command handler — improved
     bot.command('start', async (ctx) => {
-        const text       = ctx.message?.text || '';
-        const param      = text.split(' ')[1] || '';
-        const telegramId = ctx.from?.id?.toString();
-        const chatId     = ctx.chat?.id?.toString();
+        try {
+            const text       = ctx.message?.text || '';
+            const param      = text.split(' ')[1] || '';
+            const telegramId = ctx.from?.id?.toString();
+            const chatId     = ctx.chat?.id?.toString();
+            const userName   = ctx.from?.first_name || 'there';
 
-        // Channel setup mode
-        if (param.startsWith('ch_')) {
-            const userId = param.replace('ch_', '');
-            const { data: user } = await supabase
-                .from('televault_users').select('id, name')
-                .eq('user_id', userId).maybeSingle();
+            console.log(`[Bot] /start from ${telegramId} | param: "${param}"`);
 
-            if (!user) return ctx.reply("❌ Account not found. Register first.");
-
-            pendingChannels.set(telegramId, userId);
-            await ctx.reply(
-                "📨 *Channel Setup*\n\n" +
-                "Forward any message from your private channel to me.\n\n" +
-                "I'll auto-detect and connect it.",
-                { parse_mode: 'Markdown' }
-            );
-            return;
-        }
-
-        // Quick connect mode
-        if (param) {
-            try {
+            // ─── Channel Setup Mode ───
+            if (param.startsWith('ch_')) {
+                const userId = param.replace('ch_', '');
                 const { data: user } = await supabase
-                    .from('televault_users').select('id, is_connected')
-                    .eq('user_id', param).maybeSingle();
+                    .from('televault_users').select('id, name')
+                    .eq('user_id', userId).maybeSingle();
 
-                if (!user) return ctx.reply("❌ Account not found.");
-                if (user.is_connected)
-                    return ctx.reply(`✅ Already connected!\n\n${APP_URL}`);
+                if (!user) {
+                    return await ctx.reply(
+                        `❌ Account not found.\n\nPlease register on TeleVault first:\n${APP_URL}`,
+                        { disable_web_page_preview: false }
+                    );
+                }
 
-                await supabase.from('televault_users').update({
-                    telegram_id: telegramId, channel_id: chatId, is_connected: true
-                }).eq('user_id', param);
-
+                pendingChannels.set(telegramId, userId);
                 await ctx.reply(
-                    `✅ *Vault Connected!*\n\nYour files will be stored privately here.\n\n[Open TeleVault →](${APP_URL})`,
+                    `📨 *Channel Setup*\n\n` +
+                    `Hi ${userName}! Forward any message from your private channel to me here.\n\n` +
+                    `I'll auto-detect and connect it.\n\n` +
+                    `_Make sure I'm added as admin in your channel first._`,
                     { parse_mode: 'Markdown' }
                 );
-            } catch (err) {
-                console.error('[Quick Connect]', err.message);
-                await ctx.reply("❌ Something went wrong.");
+                return;
             }
-            return;
-        }
 
-        await ctx.reply("👋 Welcome to TeleVault!\nOpen the app to get started.");
+            // ─── Quick Connect Mode ───
+            if (param) {
+                const userId = param;
+                
+                const { data: user } = await supabase
+                    .from('televault_users').select('id, name, is_connected')
+                    .eq('user_id', userId).maybeSingle();
+
+                if (!user) {
+                    return await ctx.reply(
+                        `❌ Account not found.\n\nPlease register first:\n${APP_URL}`
+                    );
+                }
+
+                if (user.is_connected) {
+                    return await ctx.reply(
+                        `✅ *Already connected!*\n\nOpen your vault: ${APP_URL}`,
+                        { parse_mode: 'Markdown' }
+                    );
+                }
+
+                // Save connection
+                const { error } = await supabase.from('televault_users').update({
+                    telegram_id: telegramId, 
+                    channel_id: chatId, 
+                    is_connected: true
+                }).eq('user_id', userId);
+
+                if (error) {
+                    console.error('[Bot Update Error]', error.message);
+                    return await ctx.reply("❌ Connection failed. Please try again.");
+                }
+
+                await ctx.reply(
+                    `✅ *Vault Connected Successfully!*\n\n` +
+                    `Hi ${userName}! Your files will be stored privately right here in our chat.\n\n` +
+                    `👉 [Open TeleVault](${APP_URL})\n\n` +
+                    `_Click the link above to return to your vault._`,
+                    { 
+                        parse_mode: 'Markdown',
+                        disable_web_page_preview: false 
+                    }
+                );
+
+                console.log(`[Bot] ✅ Quick connected: ${userId}`);
+                return;
+            }
+
+            // ─── No Parameter (direct /start) ───
+            await ctx.reply(
+                `👋 *Welcome to TeleVault!*\n\n` +
+                `Hi ${userName}! I'm your personal storage bot.\n\n` +
+                `To get started:\n` +
+                `1️⃣ Open TeleVault web app\n` +
+                `2️⃣ Create your account\n` +
+                `3️⃣ Click "Quick Connect"\n\n` +
+                `👉 [Open TeleVault](${APP_URL})\n\n` +
+                `_It takes less than 30 seconds!_`,
+                { 
+                    parse_mode: 'Markdown',
+                    disable_web_page_preview: false 
+                }
+            );
+
+        } catch (err) {
+            console.error('[Bot /start Error]', err.message);
+            await ctx.reply("❌ Something went wrong. Please try again.").catch(() => {});
+        }
     });
 
+    // ✅ Forward message handler — for channel setup
     bot.on('message', async (ctx) => {
         try {
-            const telegramId    = ctx.from?.id?.toString();
+            const telegramId = ctx.from?.id?.toString();
             const pendingUserId = pendingChannels.get(telegramId);
             if (!pendingUserId) return;
 
@@ -72,43 +125,79 @@ const startBot = () => {
                                  msg?.forward_origin?.chat?.title || "Channel";
 
             if (!channelId) {
-                await ctx.reply("⚠️ Forward a message from your channel.");
+                await ctx.reply(
+                    `⚠️ I couldn't detect a channel.\n\n` +
+                    `Please forward a message that was posted *inside your channel*.`,
+                    { parse_mode: 'Markdown' }
+                );
                 return;
             }
 
+            // Verify bot is admin
             try {
                 const member = await bot.api.getChatMember(channelId, ctx.me.id);
                 if (!['administrator', 'creator'].includes(member.status)) {
-                    await ctx.reply("⚠️ I'm not admin in that channel. Add me first.");
-                    return;
+                    return await ctx.reply(
+                        `⚠️ I'm not an admin in that channel.\n\nAdd me as admin first, then forward again.`
+                    );
                 }
             } catch {
-                await ctx.reply("⚠️ Can't access that channel. Add me as admin first.");
-                return;
+                return await ctx.reply(
+                    `⚠️ Can't access that channel.\n\nMake sure I'm added as admin.`
+                );
             }
 
+            // Save
             await supabase.from('televault_users').update({
-                telegram_id: telegramId, channel_id: channelId, is_connected: true
+                telegram_id: telegramId, 
+                channel_id: channelId, 
+                is_connected: true
             }).eq('user_id', pendingUserId);
 
             pendingChannels.delete(telegramId);
 
             try {
                 await bot.api.sendMessage(channelId,
-                    "🔐 TeleVault vault activated!");
+                    "🔐 TeleVault activated!\nThis channel is now your secure storage."
+                );
             } catch {}
 
             await ctx.reply(
-                `🎉 *Channel Connected!*\n\n📁 ${channelTitle}\n\n[Open TeleVault →](${APP_URL})`,
-                { parse_mode: 'Markdown' }
+                `🎉 *Channel Connected!*\n\n` +
+                `📁 ${channelTitle}\n\n` +
+                `👉 [Open TeleVault](${APP_URL})`,
+                { parse_mode: 'Markdown', disable_web_page_preview: false }
             );
+
+            console.log(`[Bot] ✅ Channel connected: ${pendingUserId}`);
+
         } catch (err) {
-            console.error('[Forward Handler]', err.message);
+            console.error('[Bot Forward Error]', err.message);
         }
     });
 
-    bot.start({ onStart: () => console.log('🤖 Bot running...') })
-       .catch(err => console.error('[Bot Error]', err));
+    // ✅ Error handler
+    bot.catch((err) => {
+        console.error('[Bot Catch Error]', err.message);
+    });
+
+    bot.start({ 
+        onStart: (botInfo) => {
+            console.log(`🤖 Bot @${botInfo.username} is RUNNING!`);
+        }
+    }).catch(err => {
+        console.error('[Bot START FAILED]', err.message);
+    });
 };
+
+// ✅ Keep bot alive — ping every 4 minutes
+setInterval(async () => {
+    try {
+        await bot.api.getMe();
+        console.log('[Bot] ❤️ Heartbeat OK');
+    } catch (err) {
+        console.warn('[Bot] Heartbeat failed:', err.message);
+    }
+}, 4 * 60 * 1000);
 
 module.exports = { startBot };
